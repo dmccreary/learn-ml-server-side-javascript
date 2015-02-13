@@ -1,0 +1,74 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<export><workspace name="JavaScript Data Load"><query name="Example 1" focus="true" active="true" mode="xquery">(: This example will load the Star Wars data according to the requirements using XQuery :)
+
+declare namespace dir="http://marklogic.com/xdmp/directory";
+
+(: load JSON documents :)
+for $d in xdmp:filesystem-directory("C:\marklogic-starwars\data\json")//dir:entry
+
+return xdmp:document-load($d//dir:pathname, 
+  &lt;options xmlns="xdmp:document-load"&gt;
+    &lt;uri&gt;/character/{fn:string($d//dir:filename)}&lt;/uri&gt;
+    &lt;collections&gt;&lt;collection&gt;character&lt;/collection&gt;&lt;/collections&gt;
+  &lt;/options&gt;)
+,
+
+(: load image documents :)
+for $d in xdmp:filesystem-directory("C:\marklogic-starwars\data\image")//dir:entry
+
+return xdmp:document-load($d//dir:pathname, 
+  &lt;options xmlns="xdmp:document-load"&gt;
+    &lt;uri&gt;/image/{fn:string($d//dir:filename)}&lt;/uri&gt;
+    &lt;collections&gt;&lt;collection&gt;image&lt;/collection&gt;&lt;/collections&gt;
+  &lt;/options&gt;)
+  
+  </query><query name="Example 2" focus="false" active="false" mode="javascript">// this is a little helper to get you started
+// it shows how you can get a directories metadata
+// you'll need to think about how you can loop through
+// that metadata and use it to load the data as required
+// Use this tab to do some experimenting.  Feel free to use
+// JavaScript functions outside of the MarkLogic API if needed
+
+declareUpdate(); // because eventually you'll insert the data
+
+var pathToJSON = 'c:/marklogic-starwars/data/json/';
+var jsonFolderMetadata = xdmp.filesystemDirectory(pathToJSON);
+
+jsonFolderMetadata;
+</query>
+  
+  <query name="Example 3" focus="false" active="false" mode="javascript">
+    // your final code goes here</query>
+  
+  <query name="Example 4" focus="false" active="false" mode="javascript">
+    // load JSON and images using JavaScript according to lab requirements
+
+declareUpdate();
+
+var pathToJson = 'c:/marklogic-starwars/data/json';
+var pathToImage = 'c:/marklogic-starwars/data/image';
+var jsonDocs = xdmp.filesystemDirectory(pathToJson);
+var imageDocs = xdmp.filesystemDirectory(pathToImage);
+
+jsonDocs.toArray().forEach(function(doc) {
+  xdmp.documentLoad(doc.pathname,
+  {
+  'uri': '/character/' + doc.filename,
+  'collections': 'character',
+  'permissions': xdmp.defaultPermissions()
+  }
+  );
+});
+
+imageDocs.toArray().forEach(function(doc) {
+  xdmp.documentLoad(doc.pathname,
+     {
+     'uri': '/image/' + doc.filename,
+     'collections': 'image',
+     'permissions': xdmp.defaultPermissions()
+     }
+  );
+});
+  </query>
+</workspace>
+</export>

@@ -1,0 +1,102 @@
+<export>
+    <workspace name="XQuery JSON Examples">
+<query name="AWS Query" focus="true" active="true" mode="xquery">xquery version "1.0-ml";
+    (: example of how to convert a JSON file into an HTML table :)
+    declare function local:traverse-obj($obj) {
+    for $i in $obj/node()
+    return (
+    if (xdmp:node-kind($i) eq "array")
+    then (local:traverse-array($i))
+    else(element h3 { element span {attribute class {"label label-primary"}, fn:node-name($i)}, " ", fn:data($i)  })
+    )
+    };
+    
+    
+    declare function local:traverse-array($obj){
+    element table { attribute class {"table table-striped"},
+    for $i at $pos in $obj/node()
+    return (if($pos eq 1) then(element tr {for $k in $i/node() return element th {fn:node-name($k)}}) else(),
+    element tr {
+    if (xdmp:node-kind($i) eq "array")
+    then (local:traverse-array($i))
+    else( for $j in $i/node() return element td{fn:data($j)})
+    })
+    }
+    };
+    
+    (: MAIN :)
+    
+    let $title := 'table of autoscale groups'
+    
+    return
+    &lt;html&gt;
+    &lt;head&gt;
+    &lt;title&gt;{$title}&lt;/title&gt;
+    &lt;/head&gt;
+    &lt;body&gt;
+    {
+    for $x at $p in //AutoScalingGroups
+    return (
+    element h2 { fn:node-name($x), $p },
+    if (xdmp:node-kind($x) eq 'object')
+    then(local:traverse-obj($x))
+    else()
+    )  
+    }
+    &lt;/body&gt;
+    &lt;/html&gt;</query>
+        
+        <query name="map JSON" focus="false" active="false" mode="xquery">xquery version "1.0-ml";
+            (: use maps to create JSON documents :)
+            
+            let $object1 := json:object()
+            let $object2 := json:object()
+            let $_ := map:put($object1,"a",111)
+            let $_ := map:put($object1,"b",222)
+            let $_ := map:put($object1,"c",333)
+            
+            let $_ := map:put($object2,"aa",111)
+            let $_ := map:put($object2,"bb",222)
+            let $_ := map:put($object2,"cc",333)
+            let $_ := map:put($object1, "d", $object2)
+            
+            return xdmp:to-json($object1)</query><query name="Push to Array String" focus="false" active="false" mode="javascript">var things = [];
+                things.push('hello');
+                things.push(16);
+                things.push({ uri: '/content/1.xml', 'mark': 'logic' });
+                things.push(null, 37, undefined);
+                
+                'length=' + things.length +
+                '\nthings=' + things 
+                
+                
+                
+            </query>
+        
+            <query name="Query 1" focus="false" active="false" mode="xquery">
+                xquery version "1.0-ml";&#13;
+                declare namespace html = "http://www.w3.org/1999/xhtml";
+                &#13;&lt;p&gt;hello world&lt;/p&gt;
+            </query>
+        
+        <query name="Insert JSON object-node with root" focus="false" active="false" mode="xquery">
+        let $insert := xdmp:document-insert("/test2.json", 
+          object-node{ "root": object-node{ "key-1": "value-1", "b":"bar" } })
+        return doc('/test2.json')
+        </query>
+        
+        <query name="Insert JSON object-node root-less key-value pairs" focus="false" active="false" mode="xquery">
+        // note you have to run this twice to see the file.  The first time the transaction has not been done
+        let $insert := xdmp:document-insert("/test.json", object-node{ "key-1": "value-1", "key-2":"value-2" })
+        return doc("/test.json")
+        </query>
+        
+        <query name="Use XQuery node-insert-child in JSON (not working)" focus="false" active="false" mode="xquery">
+            let $insert := xdmp:document-insert("/test.json", object-node{ "a": "foo", "b":"bar" });
+            let $doc := fn:doc("/test.json")
+            let $new := object-node{ "c": "bar2" }
+            return xdmp:node-insert-child($doc/object-node(),$new/c)
+        </query>
+        
+    </workspace>
+</export>

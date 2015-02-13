@@ -1,0 +1,568 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- http://developer.marklogic.com/features/javascript -->
+<export><workspace name="JavaScript Examples">
+  
+  <query name="Hello World" focus="false" active="false" mode="javascript">
+// Run in the MarkLogic Query Console on port localhost:8000.  Set the Query Type to be JavaScript.
+// Use double slash for a comment
+'Hello World!'</query>
+
+  <query name="Concat using plus" focus="false" active="false" mode="javascript">
+    // Javascript will use the plus symbol to concatinate strings
+    var string1 = "Hello"
+    var string2 = "World"
+    
+    string1 + ' ' + string2 + '!\n'</query>
+  
+  <query name="Using push within a for loop" focus="false" active="false" mode="javascript">
+  var list = []; // this is a shorthand for var list = new Array;
+  for (i = 0; i < 10; i++) {
+     list.push(i)
+  };
+  list; // returns numbers 0 to 9
+  </query>
+  
+  <query name="Calling W3C Builtin Functions" focus="false" active="false" mode="javascript">
+// You can call any W3C builtin function using the 'fn.' prefix.
+// Since JavaScript does not permit the dash within variables or function names it should be removed
+'date=' + fn.currentDate() + ' dateTime=' + fn.currentDateTime()
+</query>
+  
+  <query name="Push Array" focus="false" active="false" mode="javascript">
+// we can declare an array of mixed items and push things on to them
+var i, things = [];
+// add a string
+things.push('String');
+// add a number
+things.push(42);
+// add a boolean
+things.push(true);
+    
+// display the array
+things</query>
+  
+  <query name="File System Directory" focus="false" active="false" mode="javascript">
+// many MarkLogic funcions return a sequence of objects 
+// See the Object* at http://docs.marklogic.com/xdmp.filesystemDirectory
+xdmp.filesystemDirectory('/tmp')
+</query>
+  
+  <query name="Compare Server-Side vs Client Date Formats" focus="false" active="false" mode="javascript">var results = new Array();
+// the current date XQuery function that includes the UTC timezone shift
+// the server-side date time with timezone offset
+var cdt = fn.currentDateTime();
+results.push(cdt);
+// we can convert this to JavaScript time format without the time zone information
+var utc = cdt.toObject();
+results.push(utc);
+results;</query>
+  
+  <query name="Get the Current Month Number" focus="false" active="false" mode="javascript">// This returns the month number (Jan - 0)
+// Note that we convert the date to an object and then get the month from that object
+fn.currentDateTime().toObject().getMonth();</query>
+  
+  <query name="milliseconds after '70" focus="false" active="false" mode="javascript">
+// show the number of milliseconds that have elapsed since January 1st, 1970
+var utc = fn.currentDateTime().toObject();
+fn.concat('number milliseconds after January 1st, 1970 =', Date.parse(utc));</query><query name="Getting Array Values" focus="false" active="false" mode="javascript">
+  // query
+var fruits = ["Banana", "Orange", "Apple", "Mango"];
+// on the client document.getElementById("demo").innerHTML = fruits.valueOf();
+// on the server
+fn.concat(
+  fruits.valueOf(),
+  // get the 2nd value
+  fruits[1])
+</query>
+  
+  <query name="parseInt with leading zeros" focus="false" active="false" mode="javascript">// This returns 8 on some browsers.
+parseInt("010") </query>
+  
+  <query name="Globals are default!" focus="false" active="false" mode="javascript">// This will change the global variable x!!!
+function addOne(myArg) {
+  x = myArg + 1;
+  return x;
+};
+
+// lets say we are starting here.  Lets add 1 to the number 10...
+x = 1;
+y = addOne(10);
+
+// the answer is not what you might expect: x=11, y=11
+fn.concat(
+   'x=', x,
+   ' y=', y
+  )</query>
+  
+  <query name="Insert JSON into MarkLogic" focus="false" active="false" mode="javascript">
+declareUpdate(); // This MUST be in any queries that change the database'
+
+// see https://docs.marklogic.com/xdmp.documentInsert
+xdmp.documentInsert('/person/dan.mccreary.json',
+  {
+    'id': '1',
+    'name' : 'Dan McCreary',
+    'title': 'Principal Consultant',
+    'handsome': true,
+    'location': 'Minneapolis',
+    'description': 'Brown hair, brown eyes.'
+});
+
+xdmp.documentInsert('/animals/camile.json',
+{
+    'id': '2',
+    'name': 'Camile',
+    'cute': true,
+    'age': '13',
+    'animal': 'cat',
+    'location': 'Minneapolis',
+    'description': 'A nice house cat with white and gray fir.  Had a rough childhood but mellowed out over the years.  Tends to sleep a lot.'
+});
+
+xdmp.documentInsert('/animals/jeepers.json',
+{
+    'id': '3',
+    'name': 'Jeepers',
+    'age': '10',
+    'animal': 'dog',
+    'location': 'Minneapolis',
+    'description': 'Small black Manchester Terrier.  Loves kids.  Barks and squirrels.'
+});</query>
+  
+<query name="Searching for cats and dogs" focus="false" active="false" mode="javascript">
+  // find any documents that have the word cat or dog in them.
+  // try changing the keywords to plurals (cats and dogs)
+  // we build a query object, but we don't execute it
+  var q = cts.orQuery([cts.wordQuery('cat'), cts.wordQuery('dogs')]);
+  // here we run the query.  A valueIterator of all documents that match is returned
+  cts.search(q);
+</query>
+
+  <query name="Property Value Search" focus="false" active="false" mode="javascript">
+// use cst.search to find all documents with an id value of 1
+cts.search(
+   cts.jsonPropertyValueQuery('id', '1')
+ )
+</query>
+  
+  <query name="Insert Provider" focus="false" active="false" mode="javascript">
+  declareUpdate(); 
+  xdmp.documentInsert('/providers/physician-1234.json',
+    {
+      "id": "1234",
+      "name" : "Sandra Johnson",
+      "title": "Physician",
+      "street": "123 Main St",
+      "city": "Minneapolis",
+      "state": "MN",
+      "location": {
+          "type": "Point",
+          "coordinates": [44.9833, -93.2667]
+        },
+      "description": "Primary care doctor with a focus on children's health and nutrition",
+      'claims': 42
+  });
+  
+  var doc = cts.doc('/providers/physician-1234.json')
+  // note that doc, doc.root and doc.root.toObject each return different types
+  // try doc instanceof Object
+  // doc instanceof Node
+  // doc instance of XMLNode
+  // why does 
+ // note that doc.root.toObject() instanceof Node returns false?
+  </query>
+  
+  <query name="Insert Provider With Collection" focus="false" active="false" mode="javascript">
+    declareUpdate();
+    
+    var provider =
+    {
+    "id": "1234",
+    "name" : "Sandra Johnson",
+    "title": "Physician",
+    "street": "123 Main St",
+    "city": "Minneapolis",
+    "state": "MN",
+    "location": {
+    "type": "Point",
+    "coordinates": [44.9833, -93.2667]},
+    "description": "Primary care doctor with a focus on children's health and nutrition",
+    'claims': 42
+    };
+    
+    xdmp.documentInsert('/providers/physician-1234.json', provider,
+       xdmp.defaultPermissions(), 'providers');
+    
+    cts.doc('/providers/physician-1234.json');
+  </query>
+  
+  <query name="List all files in a collection collection" focus="false" active="false" mode="javascript">
+    var providersArray = new Array;
+    
+    for (var item of fn.collection("providers")) {
+       providersArray.push(item.nodeURI);
+    }
+    
+    providersArray
+  </query>
+  
+  <query name="Update Provider Claim Count No Collections" focus="false" active="false" mode="javascript">
+    declareUpdate(); // this must be include if we make any changes
+    
+    // get our document
+    documentURI = '/providers/physician-1234.json';
+    documentObject = cts.doc(documentURI).root.toObject()
+    
+    // update the in-memory object
+    documentObject.claims = documentObject.claims + 1;
+    
+    // save our object - note that collections are lost
+    xdmp.documentInsert(documentURI, documentObject);
+    
+    // feedback to the console
+    "The number of claims for " + documentURI + " has been incremented by 1 to be " + documentObject.claims
+  </query>
+  
+  <query name="Update Provider Claim Count Keeping Permissions and Collections" focus="false" active="false" mode="javascript">
+    declareUpdate(); // this must be include if we make any changes
+    
+    // get our document
+    documentURI = '/providers/physician-1234.json';
+    documentObject = cts.doc(documentURI).root.toObject()
+    
+    // update the in-memory object
+    documentObject.claims = documentObject.claims + 1;
+    
+    // get a list of all the permissions associated with a document
+    var permissions = xdmp.documentGetPermissions(documentURI)
+    // get a list of all the collections that a document is in
+    var collections = xdmp.documentGetCollections(documentURI);
+    
+    // save our object - note that all the permissions and collections are preserved
+    xdmp.documentInsert(documentURI, documentObject,
+       permissions, collections);
+    
+    // feedback to the console
+    "The number of claims for " + documentURI + " has been incremented by 1 to be " + documentObject.claims
+  </query>
+  
+  
+  <query name="Get all document ids using for var item of" focus="false" active="false" mode="javascript">
+    // list all ids for files in a providers collection.
+    // note this will generate errors if the files are not .json files
+    var ids = new Array;
+    
+    for (var item of fn.collection('providers')) {
+       files.push(item.toObject().id)
+    };
+    
+    ids
+  </query>
+  
+  <query name="Get all document ids using for var item of" focus="false" active="false" mode="javascript">
+    // list all ids for files in a providers collection.
+    // note this will generate errors if the files are not .json files
+    var URIs = new Array;
+    
+    for (var item of fn.collection('providers')) {
+    files.push(item.toObject().id)
+    };
+    
+    ids
+  </query>
+  
+  <query name="Get all document ids using for var item of" focus="false" active="false" mode="javascript">
+  // list all document URIS for files in a providers collection
+  // If you leave out the collection it will return ALL URIs in a database
+  // note that even non-JSON documents will return without errors
+  // A best practice interation when a collection contains multiple document types (JSON, XML, text)
+  var URIs = new Array;
+  
+  for (var item of fn.collection('providers')) {
+     URIs.push(item.nodeUri) // Note the lowercase "ri"
+  };
+  
+  URIs
+  </query>
+  <query name="Converting Arrays to JSON" focus="false" active="false" mode="javascript">
+    // using the JSON builtin converter
+    var fruits = ["Banana", "Orange", "Apple", "Mango"];
+    'Array=' + fruits + '\nJSON String=' + JSON.stringify(fruits)
+  </query>
+  
+  <query name="Converting a string to an array with JSON.parse" focus="false" active="false" mode="javascript">
+    // converting a string to an array
+    var myString = '["myString", 3, true]'
+    // this will return an array
+    JSON.parse(myString);
+  </query>
+
+  <query name="Converting a string to an Object with JSON.parse" focus="false" active="false" mode="javascript">
+    // converting a string to an array to a JSON object
+    var myString = '{"Team Name": "Gophers", "Roster": [{"name": "Dan", "location": "Minneapolis"}, {"name": "Sue", "location": "St. Paul"}]}';
+    // this will return an array
+    JSON.parse(myString);
+  </query>
+  
+  <query name="Get URI" focus="false" active="false" mode="javascript">
+// get a document with a specific URI - only can be a single document 
+fn.doc('/person/dan.mccreary.json')
+</query>
+  
+<query name="document id" focus="false" active="false" mode="javascript">
+// get all documents with a internal id, can return many documents
+cts.search(
+   cts.jsonPropertyValueQuery('id', '1')
+ )
+</query>
+  
+  <query name="Minneapolis-Query" focus="false" active="false" mode="javascript">
+// return all documents with a location=Minneapolis
+cts.search(
+   cts.jsonPropertyValueQuery('location', 'Minneapolis')
+)</query>
+  
+  <query name="Load JSON and Image Data" focus="false" active="false" mode="javascript">
+// Example of loading a dataset from a file system
+declareUpdate();
+
+var pathToJson = '/tmp/starwars/data/json';
+var pathToImage = '/tmp/starwars/data/image';
+//
+var jsonDocs = xdmp.filesystemDirectory(pathToJson);
+var imageDocs = xdmp.filesystemDirectory(pathToImage);
+
+jsonDocs.toArray().forEach(function(doc) {
+  xdmp.documentLoad(doc.pathname,
+  {
+  'uri': '/character/' + doc.filename,
+  'collections': 'character',
+  'permissions': xdmp.defaultPermissions()
+  }
+  );
+});
+
+imageDocs.toArray().forEach(function(doc) {
+  xdmp.documentLoad(doc.pathname,
+  {
+  'uri': '/image/' + doc.filename,
+  'collections': 'image',
+  'permissions': xdmp.defaultPermissions()
+  }
+  );
+});</query>
+  
+  <query name="List all files in a filesystem dir" focus="false" active="true" mode="javascript">// get all files from a file system directory
+var pathToJson = '/tmp/starwars/data/json';
+
+// this is an array of files
+var jsonDocs = xdmp.filesystemDirectory(pathToJson);
+
+jsonDocs.toArray()</query>
+  
+  <query name="Load from FileSystem" focus="false" active="false" mode="javascript">// http://docs.marklogic.com/xdmp.documentLoad?q=xdmp.documentLoad&amp;v=8.0&amp;api=true
+declareUpdate();
+xdmp.documentLoad("/tmp/asg.json",
+    {
+      "uri" : "/aws/asg.json",
+      "permissions" : xdmp.defaultPermissions()
+    })</query><query name="doc available" focus="false" active="false" mode="javascript">// query
+fn.docAvailable("/tmp/myFile.json")</query><query name="Delete Document" focus="false" active="false" mode="javascript">// http://docs.marklogic.com/xdmp.documentDelete
+declareUpdate();
+xdmp.documentDelete('/aws/foo.json');</query><query name="Document Exists" focus="false" active="false" mode="javascript">// check to see that a document is available
+fn.docAvailable("/aws/asg.json")</query><query name="Document Properties" focus="false" active="false" mode="javascript">// query
+xdmp.documentProperties('/tmp/myFile.json')
+//&lt;prop:properties xmlns:prop="http://marklogic.com/xdmp/property"&gt;
+// &lt;prop:last-modified&gt;2015-02-09T11:02:24-06:00&lt;/prop:last-modified&gt;
+// &lt;/prop:properties&gt;
+  </query><query name="Count and Elapsed Time" focus="false" active="false" mode="javascript">// query
+'document count =' + xdmp.estimate() + ' time=' + xdmp.elapsedTime();
+</query>
+  
+  <query name="Production-Dev" focus="false" active="false" mode="javascript">
+// returns developer unless you are running on production hardware
+xdmp.productEnvironment();</query>
+  
+  <query name="Insert, Test, Get" focus="false" active="false" mode="javascript">// query
+declareUpdate();
+xdmp.documentInsert('/tmp/myFile.json',
+{
+    'id': '1',
+    'key': 'value',
+    'boolean': true,
+    'location': 'Minneapolis',
+    'description': 'Description'
+});
+
+var available = fn.docAvailable('/tmp/myFile.json');
+var doc = fn.document('/tmp/myFile.json');
+'Available=' + available + '\n' + doc</query>
+  
+  <query name="Delete Array" focus="false" active="false" mode="javascript">// query
+// Correct
+var things = ['a', 'b', 'c', 'd', 'e'];
+// remove one item starting at the 3rd location
+things.splice(2, 1); 
+things
+// Wrong way:
+// var things = ['a', 'b', 'c', 'd', 'e'];
+// delete things[2]; // Wrong! leaves a hole in the array
+</query>
+  
+  <query name="Creating Inline Ojects" focus="false" active="false" mode="javascript">// query
+var book = { };
+book.title = "Making Sense of NoSQL";
+
+// wrong!!!
+// book.author.firstname = "Dan"; 
+// not allowed because author hasn’t been defined.
+
+book.author = {
+  first: 'Dan',
+  last: 'McCreary'
+};
+
+book.location = {
+  city: 'Minneapolis',
+  state: 'Minnesota'
+};
+
+book</query>
+  
+<query name="Delete an Object Property" focus="false" active="false" mode="javascript">
+var book = { };
+book.title = "Making Sense of NoSQL";
+
+book.author = {
+  first: 'Dan',
+  last: 'McCreary'
+};
+
+book.location = {
+  city: 'Minneapolis',
+  state: 'Minnesota'
+};
+
+delete book.title;
+
+book</query><query name="pass integer by value" focus="false" active="false" mode="javascript">// query
+//Scalars are passed by value; objects are passed by reference
+
+function inc(num) {
+  num += 1;
+  return num;
+}
+
+x = 1;
+inc(x); // returns 2
+//x       // returns 1
+</query>
+  
+  
+  <query name="pass object by ref" focus="false" active="false" mode="javascript">// query
+// example of how objects are passed by reference
+// here we are passing a pointer to the book object to this function
+function changeTitle(novel) {
+  novel.read = function () { /* something */ };
+  novel.title = 'ha!';
+  novel.author = 'me';
+  return novel;
+}
+
+book = {
+  title: 'one, two, red, blue',
+  rating: 5
+};
+
+changeTitle(book);
+
+// book.title is now 'ha!'
+book;
+
+</query>
+  
+  
+  <query name="Log each property" focus="false" active="false" mode="javascript">// query
+var i;
+book = {
+  title: 'Making Sense of NoSQL',
+  authors: ['Dan McCreary','Ann Kelly'],
+  rating: 5
+};
+
+for (i in book) {
+  if (book.hasOwnProperty(i)) {
+    xdmp.log(book[i]);
+  }
+}
+
+book</query>
+  
+  
+  <query name="Strings" focus="false" active="false" mode="javascript">// query
+var message = "Hello World!"
+// message.length
+message[1]
+
+</query>
+  
+  
+  <query name="String replace" focus="false" active="false" mode="javascript">// strings are immutable
+var message = "Hello World!"
+    
+// no change
+message.replace('Hello', 'Goodbye');
+
+// copy the change to a new string
+var newMessage = message.replace('Hello', 'Goodbye');
+
+// message
+newMessage</query>
+  
+  <query name="JSON.parse with reviver filter" focus="false" active="false" mode="javascript">
+  // example of filtering on parse
+  JSON.parse('{"p": 5}', function(k, v) {
+  if (k === '') { return v; } // if topmost value, return it,
+  return v * 2;               // else return v * 2.
+  });                           // { p: 10 }
+  </query>
+  
+  <query name="Get a list of all files in our database" focus="false" active="false" mode="javascript">
+  // don't run this on large databases!
+  var uriArray = new Array();  // holds all URIs in a database
+  
+  var uris = cts.uris()  // get all our URIs in the database, this is of type ValueIterator
+  
+  while(uris.count > 0) {
+     var uri = uris.next().value;
+     uriArray.push(uri);
+  }
+  
+  uriArray
+  </query>
+  
+  <query name="Using nodeKind" focus="false" active="false" mode="javascript">
+  var doc = fn.doc('/tmp/myFile.json')
+  xdmp.nodeKind(doc) // returns document
+  </query>
+  
+  <query name="Using nodeKind" focus="false" active="false" mode="javascript">
+    var doc = fn.doc('/tmp/myFile.json')
+    doc // this is a JSON document
+    doc.root // this is an object node (still immutable)
+    
+  </query>
+  
+  <!-- things I don't understand -->
+  
+  <query name="Generators Functions" focus="false" active="false" mode="javascript">
+  // Generator function that creates a factory for iterators
+  // asObject asscepts an iterator as its parameter
+  function* asObjects(iterator) {
+    for (var doc of iterator) {
+      yield doc.toObject()
+      }
+   }
+  </query>
+  
+  </workspace></export>
