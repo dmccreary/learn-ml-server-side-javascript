@@ -1,0 +1,5 @@
+.container-fluid .table {font-size:10pt;}
+.container-fluid .table tbody tr td.number {text-align: right;}
+/* background-color: lavender; */
+.container-fluid {padding: 10px;}
+table thead tr th {background-color: gray; text-align: center; color:white;font-weight:normal;}
